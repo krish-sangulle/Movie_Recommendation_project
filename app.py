@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 app = Flask(__name__)
 
-# 🔑 PUT YOUR TMDB API KEY HERE
 load_dotenv()
 
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
@@ -17,10 +16,8 @@ TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 if not TMDB_API_KEY:
     print("⚠️ TMDB API Key not found. Posters will not load.")
 
-# =========================
-# LOAD DATA
-# =========================
 
+# LOAD DATA
 movies = pd.read_csv("dataset/tmdb_5000_movies.csv")
 credits = pd.read_csv("dataset/tmdb_5000_credits.csv")
 
@@ -37,10 +34,8 @@ movies = movies[[
 
 movies.fillna("", inplace=True)
 
-# =========================
-# CLEAN JSON COLUMNS
-# =========================
 
+# CLEAN JSON COLUMNS
 def convert(text):
     result = []
     for i in ast.literal_eval(text):
@@ -66,19 +61,14 @@ movies["combined"] = (
     movies["director"]
 )
 
-# =========================
-# VECTORIZE
-# =========================
 
+# VECTORIZE
 vectorizer = TfidfVectorizer(stop_words="english", max_features=5000)
 vectors = vectorizer.fit_transform(movies["combined"])
 
 similarity = cosine_similarity(vectors)
 
-# =========================
 # FETCH POSTER FROM TMDB
-# =========================
-
 def fetch_poster(movie_title):
     url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={movie_title}"
     response = requests.get(url)
@@ -91,10 +81,8 @@ def fetch_poster(movie_title):
 
     return "https://via.placeholder.com/500x750?text=No+Image"
 
-# =========================
-# RECOMMEND FUNCTION
-# =========================
 
+# RECOMMEND FUNCTION
 def recommend(movie):
     if movie not in movies["title"].values:
         return []
@@ -116,10 +104,8 @@ def recommend(movie):
 
     return recommendations
 
-# =========================
-# ROUTES
-# =========================
 
+# ROUTES
 @app.route("/")
 def home():
     titles = movies["title"].values
