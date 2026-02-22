@@ -72,7 +72,11 @@ vectors = vectorizer.fit_transform(movies["combined"])
 similarity = cosine_similarity(vectors)
 
 # FETCH POSTER FROM TMDB
+poster_cache = {}
 def fetch_poster(movie_title):
+    if movie_title in poster_cache:
+        return poster_cache[movie_title]
+
     url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={movie_title}"
     response = requests.get(url)
     data = response.json()
@@ -80,7 +84,9 @@ def fetch_poster(movie_title):
     if data["results"]:
         poster_path = data["results"][0]["poster_path"]
         if poster_path:
-            return "https://image.tmdb.org/t/p/w500" + poster_path
+            result = "https://image.tmdb.org/t/p/w500" + poster_path
+            poster_cache[movie_title] = result
+            return result
 
     return "https://via.placeholder.com/500x750?text=No+Image"
 
