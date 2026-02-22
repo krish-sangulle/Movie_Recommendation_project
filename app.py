@@ -18,8 +18,12 @@ if not TMDB_API_KEY:
 
 
 # LOAD DATA
-movies = pd.read_csv("dataset/tmdb_5000_movies.csv")
-credits = pd.read_csv("dataset/tmdb_5000_credits.csv")
+_base = os.path.dirname(os.path.abspath(__file__))
+try:
+    movies = pd.read_csv(os.path.join(_base, "dataset", "tmdb_5000_movies.csv"))
+    credits = pd.read_csv(os.path.join(_base, "dataset", "tmdb_5000_credits.csv"))
+except FileNotFoundError as e:
+    raise SystemExit(f"Dataset files not found: {e}")
 
 movies = movies.merge(credits, on="title")
 
