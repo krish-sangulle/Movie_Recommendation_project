@@ -14,7 +14,7 @@ load_dotenv()
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
 if not TMDB_API_KEY:
-    print("⚠️ TMDB API Key not found. Posters will not load.")
+    print("TMDB API Key not found. Posters will not load.")
 
 
 # LOAD DATA
@@ -29,7 +29,10 @@ movies = movies[[
     "genres",
     "keywords",
     "cast",
-    "crew"
+    "crew",
+    "release_date",
+    "vote_average",
+    "runtime"
 ]]
 
 movies.fillna("", inplace=True)
@@ -94,12 +97,31 @@ def recommend(movie):
     recommendations = []
 
     for i in scores:
-        title = movies.iloc[i[0]].title
+        row = movies.iloc[i[0]]
+        title = row.title
         poster = fetch_poster(title)
+
+        # Safely extract fields from the dataset row with sensible fallbacks
+        overview = row.get('overview', '') if hasattr(row, 'get') else row.overview if 'overview' in row.index else ''
+        release_date = ''
+        try:
+            release_date = row.release_date if 'release_date' in row.index else ''
+        except Exception:
+            release_date = ''
+        year = release_date[:4] if release_date else ''
+        vote_average = row.vote_average if 'vote_average' in row.index else row.get('vote_average', '') if hasattr(row, 'get') else ''
+        runtime = row.runtime if 'runtime' in row.index else None
+        genres = row.genres if 'genres' in row.index else []
 
         recommendations.append({
             "title": title,
-            "poster": poster
+            "poster": poster,
+            "overview": overview,
+            "release_date": release_date,
+            "year": year,
+            "vote_average": vote_average,
+            "runtime": runtime,
+            "genres": genres,
         })
 
     return recommendations
