@@ -1,4 +1,10 @@
-# The following lines are added to exclude CSV files and dataset folder
-
+# Dataset
 dataset/*.csv
 dataset/
+
+# Environment
+.env
+__pycache__/
+*.pyc
+venv/
+.venv/
