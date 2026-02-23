@@ -17,8 +17,8 @@ TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 if not TMDB_API_KEY:
     print("TMDB API Key not found. Posters will not load.")
 
-MOVIES_CSV_URL = os.getenv("MOVIES_CSV_URL", "")
-CREDITS_CSV_URL = os.getenv("CREDITS_CSV_URL", "")
+MOVIES_CSV_URL = os.getenv("https://github.com/krish-sangulle/Movie_Recommendation_dataset/blob/main/tmdb_5000_movies.csv", "")
+CREDITS_CSV_URL = os.getenv("https://github.com/krish-sangulle/Movie_Recommendation_dataset/blob/main/tmdb_5000_credits.csv", "")
 
 
 def _load_csv(url: str, local_path: str, name: str) -> pd.DataFrame:
