@@ -2,3 +2,11 @@
 __pycache__/
 *.pyc
 venv/
+
+# Large dataset files – download separately (see README)
+dataset/*.csv
+
+# Docker files (not needed for free hosting)
+Dockerfile
+docker-compose.yml
+.dockerignore

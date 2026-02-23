@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+import io
 import pandas as pd
 import ast
 import requests
@@ -16,14 +17,42 @@ TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 if not TMDB_API_KEY:
     print("TMDB API Key not found. Posters will not load.")
 
+MOVIES_CSV_URL = os.getenv("MOVIES_CSV_URL", "")
+CREDITS_CSV_URL = os.getenv("CREDITS_CSV_URL", "")
+
+
+def _load_csv(url: str, local_path: str, name: str) -> pd.DataFrame:
+    """Load a CSV from *local_path* if present, otherwise download from *url*."""
+    if os.path.isfile(local_path):
+        print(f"Loading dataset from local file: {local_path}")
+        return pd.read_csv(local_path)
+    if not url:
+        raise FileNotFoundError(
+            f"{name} not found at '{local_path}' and no remote URL configured. "
+            f"Place the CSV in the dataset/ folder or set the corresponding "
+            f"environment variable (see .env.example)."
+        )
+    print(f"Local file not found. Downloading dataset from: {url}")
+    resp = requests.get(url, timeout=120)
+    resp.raise_for_status()
+    return pd.read_csv(io.StringIO(resp.text))
+
 
 # LOAD DATA
 _base = os.path.dirname(os.path.abspath(__file__))
 try:
-    movies = pd.read_csv(os.path.join(_base, "dataset", "tmdb_5000_movies.csv"))
-    credits = pd.read_csv(os.path.join(_base, "dataset", "tmdb_5000_credits.csv"))
-except FileNotFoundError as e:
-    raise SystemExit(f"Dataset files not found: {e}")
+    movies = _load_csv(
+        MOVIES_CSV_URL,
+        os.path.join(_base, "dataset", "tmdb_5000_movies.csv"),
+        "tmdb_5000_movies.csv",
+    )
+    credits = _load_csv(
+        CREDITS_CSV_URL,
+        os.path.join(_base, "dataset", "tmdb_5000_credits.csv"),
+        "tmdb_5000_credits.csv",
+    )
+except Exception as e:
+    raise SystemExit(f"Failed to load dataset: {e}")
 
 movies = movies.merge(credits, on="title")
 

@@ -25,18 +25,3 @@ jobs:
 
       - name: Check syntax
         run: python -m py_compile app.py
-
-  docker:
-    runs-on: ubuntu-latest
-    needs: test
-    permissions:
-      contents: read
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: docker build -t movie-recommendation .
-
-      - name: Validate Docker image
-        run: docker run --rm movie-recommendation python -m py_compile app.py
