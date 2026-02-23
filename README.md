@@ -13,6 +13,26 @@ A content-based movie recommendation web app built with Flask, scikit-learn, and
 - Python 3.11+
 - A [TMDB API key](https://www.themoviedb.org/settings/api)
 
+## Dataset
+
+The large CSV dataset files (`tmdb_5000_movies.csv` and `tmdb_5000_credits.csv`) are **not included** in this repository to keep it small and deployable on free hosting platforms.
+
+### Option 1 – Download locally (for local development)
+
+1. Download the [TMDB 5000 Movie Dataset](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata) from Kaggle.
+2. Place `tmdb_5000_movies.csv` and `tmdb_5000_credits.csv` inside the `dataset/` folder.
+
+### Option 2 – Load from a remote URL (for cloud deployment)
+
+Set the `MOVIES_CSV_URL` and `CREDITS_CSV_URL` environment variables to point to publicly accessible raw CSV URLs (e.g. a GitHub release asset, an S3 bucket, or a direct download link):
+
+```bash
+MOVIES_CSV_URL=https://example.com/tmdb_5000_movies.csv
+CREDITS_CSV_URL=https://example.com/tmdb_5000_credits.csv
+```
+
+The app downloads the files at startup when no local copies are found.
+
 ## Local Development Setup
 
 1. **Clone the repository**
@@ -34,10 +54,12 @@ A content-based movie recommendation web app built with Flask, scikit-learn, and
 
    ```bash
    cp .env.example .env
-   # Edit .env and set TMDB_API_KEY
+   # Edit .env and set TMDB_API_KEY (and optionally the CSV URLs)
    ```
 
-4. **Run the app**
+4. **Add the dataset** (see [Dataset](#dataset) section above)
+
+5. **Run the app**
 
    ```bash
    flask run
@@ -45,29 +67,44 @@ A content-based movie recommendation web app built with Flask, scikit-learn, and
 
    Open <http://localhost:5000> in your browser.
 
-## Docker Deployment
+## Deploying on Free Hosting Platforms
 
-### Build and run with Docker
+All three platforms below work with the same `requirements.txt` and expect the
+`TMDB_API_KEY` (and optionally the CSV URL) environment variables to be set.
 
-```bash
-docker build -t movie-recommendation .
-docker run -p 5000:5000 -e TMDB_API_KEY=your_key movie-recommendation
-```
+### Render
 
-### Docker Compose (recommended for development)
+1. Create a new **Web Service** and connect your GitHub repository.
+2. Set **Build Command**: `pip install -r requirements.txt`
+3. Set **Start Command**: `gunicorn app:app`
+4. Add environment variables in the Render dashboard:
+   - `TMDB_API_KEY` = your key
+   - `MOVIES_CSV_URL` = public URL to `tmdb_5000_movies.csv`
+   - `CREDITS_CSV_URL` = public URL to `tmdb_5000_credits.csv`
 
-```bash
-cp .env.example .env   # fill in TMDB_API_KEY
-docker-compose up
-```
+### Railway
+
+1. Create a new project and connect your GitHub repository.
+2. Railway auto-detects Python – no build command needed.
+3. Set **Start Command**: `gunicorn app:app`
+4. Add the same environment variables in the Railway dashboard.
+
+### PythonAnywhere
+
+1. Create a new Web App using the **Flask** framework and Python 3.11.
+2. Upload (or `git clone`) the project into your home directory.
+3. In the **Files** tab, create a `.env` file with your `TMDB_API_KEY` and CSV URLs.
+4. In the **Web** tab, set the WSGI file to point at `app:app`.
 
 ## Environment Variables
 
-| Variable       | Required | Default       | Description                          |
-|----------------|----------|---------------|--------------------------------------|
-| `TMDB_API_KEY` | Yes      | —             | API key from themoviedb.org          |
-| `FLASK_ENV`    | No       | `production`  | `development` enables debug/reloader |
-| `PORT`         | No       | `5000`        | Port the server listens on           |
+| Variable         | Required | Default     | Description                                    |
+|------------------|----------|-------------|------------------------------------------------|
+| `TMDB_API_KEY`   | Yes      | —           | API key from themoviedb.org                    |
+| `FLASK_ENV`      | No       | `production`| `development` enables debug/reloader           |
+| `PORT`           | No       | `5000`      | Port the server listens on                     |
+| `MOVIES_CSV_URL` | No       | —           | Remote URL for `tmdb_5000_movies.csv`          |
+| `CREDITS_CSV_URL`| No       | —           | Remote URL for `tmdb_5000_credits.csv`         |
 
 ## API Endpoints
 
@@ -81,15 +118,6 @@ docker-compose up
 
 ```json
 { "title": "The Dark Knight" }
-```
-
-## Heroku Deployment
-
-The `Procfile` is included for Heroku. Set `TMDB_API_KEY` as a config var:
-
-```bash
-heroku config:set TMDB_API_KEY=your_key
-git push heroku main
 ```
 
 ## Contributing
