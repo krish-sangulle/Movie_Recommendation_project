@@ -1,12 +1,4 @@
-.env
-__pycache__/
-*.pyc
-venv/
+# The following lines are added to exclude CSV files and dataset folder
 
-# Large dataset files – download separately (see README)
 dataset/*.csv
-
-# Docker files (not needed for free hosting)
-Dockerfile
-docker-compose.yml
-.dockerignore
+dataset/
